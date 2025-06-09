@@ -125,13 +125,6 @@ export default function HomeScreen() {
               <Ionicons name="person" size={32} color="#A1CEDC" />
               <ThemedText style={styles.actionText}>Profile</ThemedText>
             </Pressable>
-            <Pressable 
-              style={styles.actionCard}
-              onPress={() => {/* TODO: Implement QR Scanner */}}
-            >
-              <Ionicons name="qr-code" size={32} color="#A1CEDC" />
-              <ThemedText style={styles.actionText}>Scan QR</ThemedText>
-            </Pressable>
           </View>
         </View>
 

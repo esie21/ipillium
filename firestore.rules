@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth.token.email == 'eshield772@gmail.com';
+    }
+    
+    // User document rules
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+    
+    // Leaderboard access
+    match /users/{userId} {
+      allow read: if request.auth != null; // Allow all authenticated users to read leaderboard data
+    }
+    
+    // Challenges collection
+    match /challenges/{challengeId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    // Badges collection
+    match /badges/{badgeId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    // Landmarks collection
+    match /landmarks/{landmark} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+  }
+} 

@@ -25,6 +25,7 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
 
   const handleSubmit = async () => {
+    console.log("Attempting to log in with:", { email, password });
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -172,14 +173,7 @@ export default function LoginScreen() {
           editable={!loading}
         />
         
-        <ThemedTextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-          editable={!loading}
-        />
+
 
         {!isLogin && (
           <ThemedTextInput
@@ -190,7 +184,14 @@ export default function LoginScreen() {
             editable={!loading}
           />
         )}
-
+         <ThemedTextInput
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+          editable={!loading}
+        />
         {!isLogin && (
           <ThemedTextInput
             placeholder="Confirm Password"

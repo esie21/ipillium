@@ -603,6 +603,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   points: {
+    
     fontSize: 14,
     color: '#666',
   },

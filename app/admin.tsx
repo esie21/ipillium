@@ -98,6 +98,8 @@ export default function AdminDashboard() {
 
   const fetchAdminData = async () => {
     try {
+      console.log('Fetching admin data...');
+      
       // Fetch users
       const usersSnap = await getDocs(collection(db, 'users'));
       const usersData = usersSnap.docs.map(doc => ({
@@ -105,13 +107,23 @@ export default function AdminDashboard() {
         ...doc.data()
       } as User));
       setUsers(usersData);
+      console.log('Fetched users:', usersData.length);
 
-      // Fetch landmarks
-      const landmarksSnap = await getDocs(collection(db, 'landmarks'));
+      // Fetch landmarks with status filter
+      const landmarksRef = collection(db, 'landmarks');
+      const landmarksSnap = await getDocs(landmarksRef);
       const landmarksData = landmarksSnap.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Landmark));
+      
+      console.log('Fetched landmarks:', {
+        total: landmarksData.length,
+        pending: landmarksData.filter(l => l.status === 'pending').length,
+        approved: landmarksData.filter(l => l.status === 'approved').length,
+        rejected: landmarksData.filter(l => l.status === 'rejected').length
+      });
+      
       setLandmarks(landmarksData);
 
       // Calculate stats
@@ -531,124 +543,150 @@ export default function AdminDashboard() {
         flexDirection: 'row',
         marginHorizontal: 20,
         marginVertical: 15,
-        borderRadius: 12,
+        borderRadius: 16,
         backgroundColor: '#FFF',
-        padding: 5,
+        padding: 8,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+      },
+      tab: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginHorizontal: 4,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 8,
+      },
+      tabText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#64748B',
+        letterSpacing: 0.3,
+      },
+      activeTab: {
+        backgroundColor: '#3B82F6',
+      },
+      activeTabText: {
+        color: '#FFF',
+        fontWeight: '700',
+      },
+      landmarkCard: {
+        marginHorizontal: 20,
+        marginVertical: 12,
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        overflow: 'hidden',
+      },
+      cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: 'rgba(255,255,255,0.95)',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+      },
+      statusBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        backgroundColor: '#F8FAFC',
+      },
+      statusText: {
+        fontSize: 13,
+        fontWeight: '600',
+        letterSpacing: 0.5,
+      },
+      approvedStatus: {
+        color: '#059669',
+      },
+      rejectedStatus: {
+        color: '#DC2626',
+      },
+      pendingStatus: {
+        color: '#D97706',
+      },
+      dateText: {
+        fontSize: 13,
+        color: '#64748B',
+        fontWeight: '500',
+      },
+      landmarkImage: {
+        width: '100%',
+        aspectRatio: 4/3,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+      },
+      cardContent: {
+        padding: 20,
+      },
+      landmarkName: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1E293B',
+        marginBottom: 8,
+        letterSpacing: 0.3,
+      },
+      landmarkDescription: {
+        fontSize: 15,
+        color: '#475569',
+        lineHeight: 22,
+        marginBottom: 16,
+      },
+      locationInfo: {
+        backgroundColor: '#F8FAFC',
+        padding: 12,
+        borderRadius: 12,
+        marginTop: 16,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+      },
+      locationText: {
+        fontSize: 14,
+        color: '#475569',
+        fontWeight: '500',
+      },
+      buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+        marginTop: 20,
+      },
+      actionButton: {
+        flex: 1,
+        padding: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 8,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
       },
-      landmarkCard: {
-        marginHorizontal: 20,
-        marginVertical: 10,
-        backgroundColor: '#fff',
-        borderRadius: 15,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        overflow: 'hidden',
+      editButton: {
+        backgroundColor: '#3B82F6',
       },
-      landmarkImage: {
-        width: '100%',
-        height: isTablet ? 300 : 200,
-        borderRadius: 8,
-        marginBottom: 10,
+      deleteButton: {
+        backgroundColor: '#EF4444',
       },
-      landmarkName: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: '#2C3E50',
-        marginBottom: 8,
-      },
-      landmarkDescription: {
-        fontSize: 15,
-        color: '#5D6D7E',
-        lineHeight: 22,
-        marginBottom: 15,
-      },
-      buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: isTablet ? 15 : 10,
-      },
-      button: {
-        flex: 1,
-        padding: isTablet ? 15 : 10,
-        borderRadius: 5,
-        alignItems: 'center',
-      },
-      buttonText: {
+      actionButtonText: {
         color: 'white',
-        fontWeight: 'bold',
-        fontSize: isTablet ? 16 : 14,
-      },
-      tab: {
-        flex: 1,
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginHorizontal: 2,
-      },
-      tabText: {
+        fontWeight: '600',
         fontSize: 15,
-        fontWeight: '500',
-        color: '#7F8C8D',
-      },
-      activeTab: {
-        backgroundColor: '#3498DB',
-      },
-      activeTabText: {
-        color: '#FFF',
-        fontWeight: '600',
-      },
-      listContainer: {
-        paddingBottom: insets.bottom + 20,
-        flexDirection: isLandscape && !isTablet ? 'row' : 'column',
-        justifyContent: 'space-between',
-      },
-      settingsContainer: {
-        flex: 1,
-        padding: isTablet ? 30 : 20,
-        alignItems: isTablet ? 'center' : 'stretch',
-      },
-      settingsCard: {
-        backgroundColor: '#FFF',
-        borderRadius: 15,
-        padding: 25,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      settingsTitle: {
-        fontSize: 26,
-        fontWeight: '700',
-        color: '#2C3E50',
-        marginBottom: 25,
-        textAlign: 'center',
-      },
-      settingItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 18,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-      },
-      settingLabel: {
-        fontSize: 16,
-        color: '#7F8C8D',
-        fontWeight: '500',
-      },
-      settingValue: {
-        fontSize: 16,
-        color: '#2C3E50',
-        fontWeight: '600',
+        letterSpacing: 0.3,
       },
       signOutButton: {
         backgroundColor: '#E74C3C',
@@ -666,51 +704,6 @@ export default function AdminDashboard() {
         color: 'white',
         fontWeight: '600',
         fontSize: 16,
-      },
-      cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 15,
-        backgroundColor: 'rgba(255,255,255,0.95)',
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-      },
-      statusBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
-        backgroundColor: '#f8f9fa',
-      },
-      pendingBadge: {
-        backgroundColor: '#FFF3CD',
-        borderWidth: 1,
-        borderColor: '#FFE69C',
-      },
-      approvedBadge: {
-        backgroundColor: '#D4EDDA',
-        borderWidth: 1,
-        borderColor: '#C3E6CB',
-      },
-      rejectedBadge: {
-        backgroundColor: '#F8D7DA',
-        borderWidth: 1,
-        borderColor: '#F5C6CB',
-      },
-      cardContent: {
-        padding: 20,
-      },
-      locationInfo: {
-        backgroundColor: '#F8F9FA',
-        padding: 12,
-        borderRadius: 10,
-        marginTop: 15,
-        borderWidth: 1,
-        borderColor: '#E9ECEF',
-      },
-      locationText: {
-        fontSize: 14,
-        color: '#5D6D7E',
       },
       addLandmarkContainer: {
         paddingHorizontal: 20,
@@ -749,6 +742,511 @@ export default function AdminDashboard() {
       },
       addLandmarkArrow: {
         marginLeft: 10,
+      },
+      editContainer: {
+        padding: 20,
+      },
+      editHeader: {
+        marginBottom: 25,
+        alignItems: 'center',
+      },
+      editTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#2C3E50',
+        marginBottom: 8,
+      },
+      editSubtitle: {
+        fontSize: 14,
+        color: '#7F8C8D',
+        textAlign: 'center',
+      },
+      editForm: {
+        gap: 20,
+      },
+      formGroup: {
+        marginBottom: 20,
+      },
+      inputLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#34495E',
+        marginBottom: 8,
+      },
+      editInput: {
+        backgroundColor: '#F8F9FA',
+        padding: 15,
+        borderRadius: 12,
+        fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+        color: '#2C3E50',
+      },
+      editTextArea: {
+        minHeight: 100,
+        paddingTop: 15,
+      },
+      editImageContainer: {
+        marginVertical: 15,
+        borderRadius: 12,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+      },
+      editImage: {
+        width: '100%',
+        height: 200,
+      },
+      editButtons: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 10,
+      },
+      saveButton: {
+        backgroundColor: '#2ECC71',
+        flex: 2,
+      },
+      cancelButton: {
+        backgroundColor: '#E74C3C',
+        flex: 1,
+      },
+      modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      modalContent: {
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 20,
+        width: '90%',
+        maxWidth: 500,
+        maxHeight: '90%',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+      },
+      modalTitleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+      },
+      modalTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#2C3E50',
+      },
+      closeButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: '#F8F9FA',
+      },
+      modalScroll: {
+        maxHeight: '70%',
+      },
+      imageUploadContainer: {
+        marginBottom: 20,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#F8F9FA',
+        borderWidth: 2,
+        borderColor: '#E9ECEF',
+        borderStyle: 'dashed',
+      },
+      uploadedImage: {
+        width: '100%',
+        height: 200,
+      },
+      imageUploadPlaceholder: {
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+      },
+      imageUploadText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#3498DB',
+        marginTop: 10,
+      },
+      imageUploadSubtext: {
+        fontSize: 14,
+        color: '#7F8C8D',
+        marginTop: 5,
+      },
+      textArea: {
+        minHeight: 100,
+        textAlignVertical: 'top',
+      },
+      locationPickerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
+        padding: 15,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+        gap: 10,
+      },
+      locationPickerText: {
+        fontSize: 16,
+        color: '#2C3E50',
+      },
+      statusSelector: {
+        flexDirection: 'row',
+        gap: 10,
+      },
+      statusOption: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: '#F8F9FA',
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+        alignItems: 'center',
+      },
+      statusOptionActive: {
+        backgroundColor: '#3498DB',
+        borderColor: '#3498DB',
+      },
+      statusOptionText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#7F8C8D',
+      },
+      statusOptionTextActive: {
+        color: '#FFF',
+      },
+      modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+        marginTop: 20,
+      },
+      modalButton: {
+        flex: 1,
+        padding: 15,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      cancelButton: {
+        backgroundColor: '#FF6B6B',
+      },
+      createButton: {
+        backgroundColor: '#3B82F6',
+      },
+      addButton: {
+        backgroundColor: '#2ECC71',
+      },
+      confirmButton: {
+        backgroundColor: '#3498DB',
+      },
+      buttonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+      },
+      mapModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      mapModalContent: {
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 20,
+        width: '90%',
+        maxWidth: 500,
+        maxHeight: '90%',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      mapModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+      },
+      mapModalTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#2C3E50',
+      },
+      mapPicker: {
+        width: '100%',
+        height: 300,
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 20,
+      },
+      mapModalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+      },
+      roleInfo: {
+        backgroundColor: '#E8F5E9',
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 10,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#81C784',
+      },
+      roleInfoText: {
+        color: '#2E7D32',
+        fontSize: 14,
+        textAlign: 'center',
+      },
+      listContainer: {
+        padding: 16,
+        flexGrow: 1,
+      },
+      pendingCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        marginBottom: 16,
+        overflow: 'hidden',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      pendingBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FEF3C7',
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#FDE68A',
+      },
+      pendingIconContainer: {
+        backgroundColor: '#FCD34D',
+        borderRadius: 20,
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+      },
+      pendingIcon: {
+        fontSize: 16,
+      },
+      pendingBannerText: {
+        flex: 1,
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#92400E',
+      },
+      submissionDate: {
+        fontSize: 13,
+        color: '#92400E',
+        opacity: 0.8,
+      },
+      pendingContent: {
+        padding: 16,
+      },
+      pendingImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 12,
+        marginBottom: 16,
+      },
+      pendingDetails: {
+        gap: 12,
+      },
+      pendingTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1E293B',
+        marginBottom: 4,
+      },
+      pendingDescription: {
+        fontSize: 15,
+        color: '#475569',
+        lineHeight: 22,
+      },
+      pendingMetadata: {
+        backgroundColor: '#F8FAFC',
+        padding: 12,
+        borderRadius: 12,
+        marginTop: 8,
+        gap: 8,
+      },
+      pendingLocation: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      },
+      submitterDetail: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      },
+      metadataLabel: {
+        fontSize: 14,
+        color: '#64748B',
+        fontWeight: '500',
+      },
+      metadataValue: {
+        fontSize: 14,
+        color: '#1E293B',
+        fontWeight: '600',
+      },
+      reviewActions: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 16,
+      },
+      reviewButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 12,
+        borderRadius: 8,
+        gap: 6,
+      },
+      reviewButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+      },
+      approveButton: {
+        backgroundColor: '#059669',
+      },
+      rejectButton: {
+        backgroundColor: '#DC2626',
+      },
+      settingsContainer: {
+        flex: 1,
+        padding: 20,
+        backgroundColor: '#F8F9FA',
+      },
+      settingsSection: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 20,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      settingsTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1E293B',
+        marginBottom: 16,
+      },
+      settingItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+      },
+      settingLabel: {
+        fontSize: 16,
+        color: '#475569',
+        fontWeight: '500',
+      },
+      settingValue: {
+        fontSize: 16,
+        color: '#1E293B',
+        fontWeight: '600',
+      },
+      dangerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FEF2F2',
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#FEE2E2',
+        gap: 8,
+      },
+      dangerButtonText: {
+        color: '#DC2626',
+        fontSize: 16,
+        fontWeight: '600',
+      },
+      userCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      userName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1E293B',
+        flex: 1,
+      },
+      userEmail: {
+        fontSize: 14,
+        color: '#64748B',
+        flex: 1,
+      },
+      userRole: {
+        fontSize: 14,
+        color: '#3B82F6',
+        fontWeight: '500',
+        flex: 1,
+      },
+      createAdminButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#3B82F6',
+        padding: 16,
+        borderRadius: 12,
+        marginBottom: 20,
+        gap: 8,
+      },
+      createAdminButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+      },
+      input: {
+        backgroundColor: '#F8F9FA',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        fontSize: 16,
+        color: '#1E293B',
+      },
+      textArea: {
+        minHeight: 100,
+        textAlignVertical: 'top',
       },
     });
   };
@@ -1035,7 +1533,7 @@ export default function AdminDashboard() {
 
       <View style={styles.settingsSection}>
         <ThemedText style={styles.settingsTitle}>App Settings</ThemedText>
-        <View style={styles.settingItem}>
+        {/*<View style={styles.settingItem}>
           <ThemedText style={styles.settingLabel}>Dark Mode</ThemedText>
           <Switch
             value={isDarkMode}
@@ -1043,7 +1541,7 @@ export default function AdminDashboard() {
             trackColor={{ false: '#767577', true: '#81b0ff' }}
             thumbColor={isDarkMode ? '#007AFF' : '#f4f3f4'}
           />
-        </View>
+        </View>*/}
         <View style={styles.settingItem}>
           <ThemedText style={styles.settingLabel}>Notifications</ThemedText>
           <Switch
@@ -1099,7 +1597,18 @@ export default function AdminDashboard() {
         {isSuperAdmin && (
           <Pressable 
             style={[styles.tab, activeTab === 'users' && styles.activeTab]}
-            onPress={() => setActiveTab('users')}>
+            onPress={() => {
+              setActiveTab('users');
+              console.log('Users Tab - All Users Details:');
+              users.forEach(user => {
+                console.log({
+                  username: user.username,
+                  email: user.email,
+                  role: user.role || 'user'
+                });
+              });
+            }}
+          >
             <ThemedText style={[styles.tabText, activeTab === 'users' && styles.activeTabText]}>
               Users
             </ThemedText>
@@ -1140,7 +1649,7 @@ export default function AdminDashboard() {
               </Pressable>
             </View>
             <FlatList
-              data={landmarks}
+              data={landmarks.filter(landmark => landmark.status === 'approved')}
               renderItem={renderLandmark}
               keyExtractor={item => item.id}
               contentContainerStyle={responsiveStyles.listContainer}
@@ -1157,7 +1666,7 @@ export default function AdminDashboard() {
           </>
         )}
         {activeTab === 'users' && (
-          <View style={styles.listContainer}>
+          <ScrollView style={styles.listContainer}>
             {isSuperAdmin && (
               <Pressable 
                 style={styles.createAdminButton}
@@ -1172,29 +1681,22 @@ export default function AdminDashboard() {
                 <ThemedText style={styles.userName}>{user.username}</ThemedText>
                 <ThemedText style={styles.userEmail}>{user.email}</ThemedText>
                 <ThemedText style={styles.userRole}>{user.role || 'user'}</ThemedText>
-                <Pressable 
-                  style={styles.deleteButton}
-                  onPress={() => handleDeleteUser(user.id)}
-                >
-                  <Ionicons name="trash" size={24} color="#FF6B6B" />
-                </Pressable>
               </View>
             ))}
-          </View>
+          </ScrollView>
         )}
         {activeTab === 'pending' && (
-          <View style={styles.listContainer}>
+          <View style={styles.contentContainer}>
             <FlatList
               data={landmarks.filter(landmark => landmark.status === 'pending')}
               renderItem={renderPendingLandmark}
               keyExtractor={item => item.id}
-              contentContainerStyle={responsiveStyles.listContainer}
+              contentContainerStyle={styles.listContainer}
               showsVerticalScrollIndicator={false}
               initialNumToRender={5}
               maxToRenderPerBatch={5}
               windowSize={5}
               removeClippedSubviews={true}
-              style={styles.scrollView}
             />
           </View>
         )}
@@ -1292,47 +1794,6 @@ export default function AdminDashboard() {
                 </Pressable>
               </View>
 
-              <View style={styles.formGroup}>
-                <ThemedText style={styles.inputLabel}>Status</ThemedText>
-                <View style={styles.statusSelector}>
-                  <Pressable 
-                    style={[
-                      styles.statusOption,
-                      newLandmark.status === 'pending' && styles.statusOptionActive
-                    ]}
-                    onPress={() => setNewLandmark(prev => ({ ...prev, status: 'pending' }))}
-                  >
-                    <ThemedText style={[
-                      styles.statusOptionText,
-                      newLandmark.status === 'pending' && styles.statusOptionTextActive
-                    ]}>Pending</ThemedText>
-                  </Pressable>
-                  <Pressable 
-                    style={[
-                      styles.statusOption,
-                      newLandmark.status === 'approved' && styles.statusOptionActive
-                    ]}
-                    onPress={() => setNewLandmark(prev => ({ ...prev, status: 'approved' }))}
-                  >
-                    <ThemedText style={[
-                      styles.statusOptionText,
-                      newLandmark.status === 'approved' && styles.statusOptionTextActive
-                    ]}>Approved</ThemedText>
-                  </Pressable>
-                  <Pressable 
-                    style={[
-                      styles.statusOption,
-                      newLandmark.status === 'rejected' && styles.statusOptionActive
-                    ]}
-                    onPress={() => setNewLandmark(prev => ({ ...prev, status: 'rejected' }))}
-                  >
-                    <ThemedText style={[
-                      styles.statusOptionText,
-                      newLandmark.status === 'rejected' && styles.statusOptionTextActive
-                    ]}>Rejected</ThemedText>
-                  </Pressable>
-                </View>
-              </View>
             </ScrollView>
 
             <View style={styles.modalButtons}>
@@ -1354,7 +1815,7 @@ export default function AdminDashboard() {
                 <ThemedText style={styles.buttonText}>Cancel</ThemedText>
               </Pressable>
               <Pressable 
-                style={[styles.modalButton, styles.addButton]}
+                style={[styles.modalButton, styles.createButton]}
                 onPress={handleAddOrEditLandmark}
                 disabled={!newLandmark.name || !newLandmark.description || !selectedImage || !newLandmark.location}
               >
@@ -1518,66 +1979,205 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 20,
     marginVertical: 15,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: '#FFF',
-    padding: 5,
+    padding: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  tab: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 4,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#64748B',
+    letterSpacing: 0.3,
+  },
+  activeTab: {
+    backgroundColor: '#3B82F6',
+  },
+  activeTabText: {
+    color: '#FFF',
+    fontWeight: '700',
+  },
+  landmarkCard: {
+    marginHorizontal: 20,
+    marginVertical: 12,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    overflow: 'hidden',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#F8FAFC',
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  approvedStatus: {
+    color: '#059669',
+  },
+  rejectedStatus: {
+    color: '#DC2626',
+  },
+  pendingStatus: {
+    color: '#D97706',
+  },
+  dateText: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  landmarkImage: {
+    width: '100%',
+    aspectRatio: 4/3,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  cardContent: {
+    padding: 20,
+  },
+  landmarkName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 8,
+    letterSpacing: 0.3,
+  },
+  landmarkDescription: {
+    fontSize: 15,
+    color: '#475569',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  locationInfo: {
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#475569',
+    fontWeight: '500',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 20,
+  },
+  actionButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  landmarkCard: {
-    marginHorizontal: 20,
-    marginVertical: 10,
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    overflow: 'hidden',
-  },
-  landmarkImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  landmarkName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 8,
-  },
-  landmarkDescription: {
-    fontSize: 15,
-    color: '#5D6D7E',
-    lineHeight: 22,
-    marginBottom: 15,
-  },
-  status: {
-    color: '#888',
-    marginBottom: 10,
-    fontStyle: 'italic',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  button: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
   editButton: {
-    backgroundColor: '#3498DB',
+    backgroundColor: '#3B82F6',
   },
   deleteButton: {
+    backgroundColor: '#EF4444',
+  },
+  actionButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 15,
+    letterSpacing: 0.3,
+  },
+  signOutButton: {
     backgroundColor: '#E74C3C',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 30,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  signOutText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  addLandmarkContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  addLandmarkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3498DB',
+    padding: 20,
+    borderRadius: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  addLandmarkIconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 8,
+  },
+  addLandmarkTextContainer: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  addLandmarkTitle: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  addLandmarkSubtitle: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+  },
+  addLandmarkArrow: {
+    marginLeft: 10,
   },
   editContainer: {
     padding: 20,
@@ -1645,279 +2245,6 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: '#E74C3C',
     flex: 1,
-  },
-  actionButton: {
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  actionButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  signOutButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: '#FF6B6B',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  signOutText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  tab: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginHorizontal: 2,
-  },
-  activeTab: {
-    backgroundColor: '#3498DB',
-  },
-  tabText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#7F8C8D',
-  },
-  activeTabText: {
-    color: '#FFF',
-    fontWeight: '600',
-  },
-  approveButton: {
-    backgroundColor: '#2ECC71',
-  },
-  rejectButton: {
-    backgroundColor: '#E74C3C',
-  },
-  settingsContainer: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#F5F5F5',
-  },
-  settingsSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  settingsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    color: '#333',
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  settingLabel: {
-    fontSize: 16,
-    color: '#666',
-  },
-  settingValue: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  dangerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFEBEE',
-    padding: 16,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  dangerButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: '#FF6B6B',
-    fontWeight: '600',
-  },
-  pendingCard: {
-    padding: 0,
-    overflow: 'hidden',
-  },
-  pendingBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF3CD',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFE69C',
-  },
-  pendingIconContainer: {
-    marginRight: 8,
-  },
-  pendingIcon: {
-    fontSize: 18,
-  },
-  pendingBannerText: {
-    color: '#856404',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  submissionDate: {
-    marginLeft: 'auto',
-    color: '#856404',
-    fontSize: 12,
-  },
-  pendingContent: {
-    padding: 15,
-  },
-  pendingImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  pendingDetails: {
-    gap: 12,
-  },
-  pendingTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#2C3E50',
-  },
-  pendingDescription: {
-    fontSize: 15,
-    color: '#5D6D7E',
-    lineHeight: 22,
-  },
-  pendingMetadata: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 10,
-    padding: 15,
-    gap: 12,
-  },
-  pendingLocation: {
-    gap: 4,
-  },
-  submitterDetail: {
-    gap: 4,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E9ECEF',
-  },
-  metadataLabel: {
-    fontSize: 13,
-    color: '#7F8C8D',
-    fontWeight: '600',
-  },
-  metadataValue: {
-    fontSize: 14,
-    color: '#2C3E50',
-  },
-  reviewActions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 5,
-  },
-  reviewButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderRadius: 8,
-    gap: 8,
-  },
-  reviewButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 15,
-  },
-  locationEditContainer: {
-    marginTop: 10,
-    gap: 15,
-  },
-  locationMap: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  coordinatesInputs: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  coordinateGroup: {
-    flex: 1,
-  },
-  coordinateLabel: {
-    fontSize: 14,
-    color: '#7F8C8D',
-    marginBottom: 5,
-  },
-  coordinateInput: {
-    backgroundColor: '#F8F9FA',
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-  },
-  addLandmarkModal: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addLandmarkTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#2C3E50',
-    marginBottom: 20,
-  },
-  addButton: {
-    backgroundColor: '#3498DB',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  userCard: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 5,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#7F8C8D',
   },
   modalOverlay: {
     flex: 1,
@@ -1994,7 +2321,7 @@ const styles = StyleSheet.create({
   },
   textArea: {
     minHeight: 100,
-    paddingTop: 15,
+    textAlignVertical: 'top',
   },
   locationPickerButton: {
     flexDirection: 'row',
@@ -2050,6 +2377,9 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#FF6B6B',
+  },
+  createButton: {
+    backgroundColor: '#3B82F6',
   },
   addButton: {
     backgroundColor: '#2ECC71',
@@ -2119,9 +2449,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   listContainer: {
-    flex: 1,
     padding: 16,
-    backgroundColor: '#F5F5F5',
+    flexGrow: 1,
   },
   approveButton: {
     backgroundColor: '#E8F5E9',
@@ -2140,5 +2469,271 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontSize: 14,
     fontWeight: '600',
+  },
+  locationEditContainer: {
+    marginTop: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  locationMap: {
+    width: '100%',
+    height: 200,
+  },
+  coordinatesInputs: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 15,
+    backgroundColor: '#F8F9FA',
+  },
+  coordinateGroup: {
+    flex: 1,
+  },
+  coordinateLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 5,
+  },
+  coordinateInput: {
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    fontSize: 14,
+  },
+  pendingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  pendingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FDE68A',
+  },
+  pendingIconContainer: {
+    backgroundColor: '#FCD34D',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  pendingIcon: {
+    fontSize: 16,
+  },
+  pendingBannerText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#92400E',
+  },
+  submissionDate: {
+    fontSize: 13,
+    color: '#92400E',
+    opacity: 0.8,
+  },
+  pendingContent: {
+    padding: 16,
+  },
+  pendingImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  pendingDetails: {
+    gap: 12,
+  },
+  pendingTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  pendingDescription: {
+    fontSize: 15,
+    color: '#475569',
+    lineHeight: 22,
+  },
+  pendingMetadata: {
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 8,
+  },
+  pendingLocation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  submitterDetail: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  metadataLabel: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  metadataValue: {
+    fontSize: 14,
+    color: '#1E293B',
+    fontWeight: '600',
+  },
+  reviewActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  reviewButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  reviewButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  approveButton: {
+    backgroundColor: '#059669',
+  },
+  rejectButton: {
+    backgroundColor: '#DC2626',
+  },
+  settingsContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#F8F9FA',
+  },
+  settingsSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  settingsTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 16,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  settingLabel: {
+    fontSize: 16,
+    color: '#475569',
+    fontWeight: '500',
+  },
+  settingValue: {
+    fontSize: 16,
+    color: '#1E293B',
+    fontWeight: '600',
+  },
+  dangerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FEF2F2',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    gap: 8,
+  },
+  dangerButtonText: {
+    color: '#DC2626',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  userCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E293B',
+    flex: 1,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#64748B',
+    flex: 1,
+  },
+  userRole: {
+    fontSize: 14,
+    color: '#3B82F6',
+    fontWeight: '500',
+    flex: 1,
+  },
+  createAdminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3B82F6',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 8,
+  },
+  createAdminButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  input: {
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    fontSize: 16,
+    color: '#1E293B',
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
   },
 }); 

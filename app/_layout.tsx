@@ -6,6 +6,8 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
+import { PrivacyProvider } from '@/contexts/PrivacyContext';
+import { HelpProvider } from '@/contexts/HelpContext';
 
 function RootLayoutNav() {
   const { user, loading, isAdmin } = useAuth();
@@ -34,6 +36,8 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="admin" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="help" />
       </Stack>
     </>
   );
@@ -43,7 +47,11 @@ export default function RootLayout() {
   return (
     <NetworkProvider>
       <AuthProvider>
-        <RootLayoutNav />
+        <PrivacyProvider>
+          <HelpProvider>
+            <RootLayoutNav />
+          </HelpProvider>
+        </PrivacyProvider>
       </AuthProvider>
     </NetworkProvider>
   );

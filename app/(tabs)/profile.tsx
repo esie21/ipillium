@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { UserProgress } from '@/types/gamification';
 import * as ImagePicker from 'expo-image-picker';
 import { storage } from '@/utils/storage';
+import { useRouter } from 'expo-router';
 
 interface LandmarkDetails {
   id: string;
@@ -44,6 +45,7 @@ export default function ProfileScreen() {
   const [newAvatar, setNewAvatar] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const APP_VERSION = '1.0.0';
+  const router = useRouter();
 
   useEffect(() => {
     const loadUserProgress = async () => {
@@ -277,7 +279,7 @@ export default function ProfileScreen() {
             />
           </View>
 
-          <View style={styles.settingItem}>
+         {/*} <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Ionicons name="moon-outline" size={24} color="#666" />
               <ThemedText style={styles.settingText}>Dark Mode</ThemedText>
@@ -287,21 +289,23 @@ export default function ProfileScreen() {
               onValueChange={setIsDarkMode}
               trackColor={{ false: '#767577', true: '#A1CEDC' }}
             />
-          </View>
+          </View>*/}
 
-          <Pressable style={styles.settingItem} onPress={() => {/* TODO: Help */}}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="help-circle-outline" size={24} color="#666" />
-              <ThemedText style={styles.settingText}>Help & Support</ThemedText>
-            </View>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => router.push('/privacy')}
+          >
+            <Ionicons name="shield-checkmark-outline" size={24} color="#666" />
+            <ThemedText style={styles.menuText}>Privacy Policy</ThemedText>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </Pressable>
 
-          <Pressable style={styles.settingItem} onPress={() => {/* TODO: Privacy */}}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="shield-outline" size={24} color="#666" />
-              <ThemedText style={styles.settingText}>Privacy Policy</ThemedText>
-            </View>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => router.push('/help')}
+          >
+            <Ionicons name="help-circle-outline" size={24} color="#666" />
+            <ThemedText style={styles.menuText}>Help & Support</ThemedText>
             <Ionicons name="chevron-forward" size={24} color="#666" />
           </Pressable>
 
@@ -312,18 +316,6 @@ export default function ProfileScreen() {
             </View>
             <ThemedText style={styles.versionText}>{APP_VERSION}</ThemedText>
           </View>
-
-          {/*
-          <Pressable 
-            style={[styles.settingItem, styles.dangerItem]} 
-            onPress={() => setShowDeleteConfirm(true)}
-          >
-            <View style={styles.settingLeft}>
-              <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
-              <ThemedText style={styles.dangerText}>Delete Account</ThemedText>
-            </View>
-          </Pressable>
-          */}
         </View>
       </ScrollView>
 
@@ -676,5 +668,17 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  menuText: {
+    fontSize: 16,
+    color: '#333',
   },
 }); 

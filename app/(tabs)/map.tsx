@@ -116,6 +116,8 @@ export default function MapScreen() {
     monthlyPoints: 0,
     currentStreak: 0
   });
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [tempLocation, setTempLocation] = useState({ latitude: 0, longitude: 0 });
 
   // Memoize predefined landmarks transformation
   const transformedPredefinedLandmarks = useMemo(() => 
@@ -140,11 +142,13 @@ export default function MapScreen() {
       try {
         const landmarksCollection = collection(db, 'landmarks');
         const snapshot = await getDocs(landmarksCollection);
-        userLandmarks = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          isPreset: false,
-        })) as Landmark[];
+        userLandmarks = snapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            isPreset: false,
+          }))
+          .filter(landmark => landmark.status === 'approved') as Landmark[];
       } catch (firestoreError) {
         console.error('Error fetching from Firestore:', firestoreError);
       }
@@ -601,6 +605,28 @@ export default function MapScreen() {
     </Modal>
   );
 
+  const handleLocationPick = (e: any) => {
+    setTempLocation({
+      latitude: e.nativeEvent.coordinate.latitude,
+      longitude: e.nativeEvent.coordinate.longitude,
+    });
+  };
+
+  const handleConfirmLocation = () => {
+    const newLocation = {
+      latitude: tempLocation.latitude,
+      longitude: tempLocation.longitude,
+      latitudeDelta: IPIL_REGION.latitudeDelta,
+      longitudeDelta: IPIL_REGION.longitudeDelta
+    };
+    setSelectedLocation(newLocation);
+    setNewLandmark(prev => ({
+      ...prev,
+      location: newLocation
+    }));
+    setShowMapPicker(false);
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -652,45 +678,6 @@ export default function MapScreen() {
                 Tap on the map to place the landmark marker
               </ThemedText>
 
-              {/* Show selected coordinates */}
-              <ThemedView style={styles.coordinatesContainer}>
-                <ThemedText style={styles.coordinatesText}>
-                  Selected Location:
-                </ThemedText>
-                <ThemedText style={styles.coordinates}>
-                  Latitude: {selectedLocation.latitude.toFixed(6)}
-                </ThemedText>
-                <ThemedText style={styles.coordinates}>
-                  Longitude: {selectedLocation.longitude.toFixed(6)}
-                </ThemedText>
-
-                <ThemedText style={[styles.coordinatesText, { marginTop: 15 }]}>
-                  Enter Coordinates Manually:
-                </ThemedText>
-                <ThemedView style={styles.coordInputContainer}>
-                  <ThemedTextInput
-                    placeholder="Latitude"
-                    value={manualCoords.latitude}
-                    onChangeText={(text) => setManualCoords(prev => ({ ...prev, latitude: text }))}
-                    style={styles.coordInput}
-                    keyboardType="numeric"
-                  />
-                  <ThemedTextInput
-                    placeholder="Longitude"
-                    value={manualCoords.longitude}
-                    onChangeText={(text) => setManualCoords(prev => ({ ...prev, longitude: text }))}
-                    style={styles.coordInput}
-                    keyboardType="numeric"
-                  />
-                  <Pressable 
-                    style={styles.updateButton}
-                    onPress={handleManualLocation}
-                  >
-                    <ThemedText style={styles.updateButtonText}>Update</ThemedText>
-                  </Pressable>
-                </ThemedView>
-              </ThemedView>
-
               <ThemedView style={styles.addLandmarkForm}>
                 <ThemedTextInput
                   placeholder="Landmark Name"
@@ -706,6 +693,22 @@ export default function MapScreen() {
                   multiline
                 />
                 {renderImagePicker()}
+
+                <View style={styles.formGroup}>
+                  <ThemedText style={styles.inputLabel}>Location</ThemedText>
+                  <Pressable 
+                    style={styles.locationPickerButton}
+                    onPress={() => setShowMapPicker(true)}
+                  >
+                    <Ionicons name="map" size={20} color="#3498DB" />
+                    <ThemedText style={styles.locationPickerText}>
+                      {selectedLocation.latitude && selectedLocation.longitude
+                        ? `${selectedLocation.latitude.toFixed(4)}, ${selectedLocation.longitude.toFixed(4)}`
+                        : 'Pick location on map'}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+
                 <View style={styles.modalButtons}>
                   <Pressable
                     style={[styles.button, styles.submitButton]}
@@ -782,6 +785,58 @@ export default function MapScreen() {
       </Pressable>
 
       <ChallengesModal />
+
+      {/* Map Picker Modal */}
+      <Modal
+        visible={showMapPicker}
+        animationType="slide"
+        transparent={true}
+      >
+        <ThemedView style={styles.mapModalOverlay}>
+          <ThemedView style={styles.mapModalContent}>
+            <View style={styles.mapModalHeader}>
+              <ThemedText style={styles.mapModalTitle}>Pick Location</ThemedText>
+              <Pressable 
+                onPress={() => setShowMapPicker(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#666" />
+              </Pressable>
+            </View>
+
+            <MapView
+              style={styles.mapPicker}
+              initialRegion={{
+                latitude: selectedLocation.latitude || IPIL_REGION.latitude,
+                longitude: selectedLocation.longitude || IPIL_REGION.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }}
+              onPress={handleLocationPick}
+            >
+              {tempLocation.latitude !== 0 && tempLocation.longitude !== 0 && (
+                <Marker coordinate={tempLocation} />
+              )}
+            </MapView>
+
+            <View style={styles.mapModalButtons}>
+              <Pressable 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowMapPicker(false)}
+              >
+                <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+              </Pressable>
+              <Pressable 
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={handleConfirmLocation}
+                disabled={tempLocation.latitude === 0 && tempLocation.longitude === 0}
+              >
+                <ThemedText style={styles.buttonText}>Confirm Location</ThemedText>
+              </Pressable>
+            </View>
+          </ThemedView>
+        </ThemedView>
+      </Modal>
     </View>
   );
 }
@@ -939,42 +994,6 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#666',
   },
-  coordinatesContainer: {
-    backgroundColor: '#f5f5f5',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
-  },
-  coordinatesText: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  coordinates: {
-    color: '#666',
-  },
-  coordInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 5,
-    gap: 10,
-  },
-  coordInput: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  updateButton: {
-    backgroundColor: '#A1CEDC',
-    padding: 10,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  updateButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
   imagePickerContainer: {
     marginVertical: 10,
     alignItems: 'center',
@@ -1105,5 +1124,73 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
+  },
+  formGroup: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#34495E',
+    marginBottom: 8,
+  },
+  locationPickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    padding: 15,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    gap: 10,
+  },
+  locationPickerText: {
+    fontSize: 16,
+    color: '#2C3E50',
+  },
+  mapModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapModalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxWidth: 500,
+    maxHeight: '90%',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  mapModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  mapModalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#2C3E50',
+  },
+  mapPicker: {
+    width: '100%',
+    height: 300,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  mapModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  confirmButton: {
+    backgroundColor: '#3498DB',
   },
 }); 
